@@ -788,17 +788,6 @@ ruleTester.run('prop-types', rule, {
       ].join('\n'),
       parser: 'babel-eslint'
     }, {
-      // Reassigned props are ignored
-      code: [
-        'export class Hello extends Component {',
-        '  render() {',
-        '    const props = this.props;',
-        '    return <div>Hello {props.name.firstname} {props[\'name\'].lastname}</div>',
-        '  }',
-        '}'
-      ].join('\n'),
-      parser: 'babel-eslint'
-    }, {
       code: [
         'export default function FooBar(props) {',
         '  const bar = props.bar;',
@@ -1182,6 +1171,31 @@ ruleTester.run('prop-types', rule, {
         '}'
       ].join('\n'),
       parser: 'babel-eslint'
+    }, {
+      code: [
+        'var Hello = React.createClass({',
+        '  propTypes: {',
+        '    name: React.PropTypes.string.isRequired',
+        '  },',
+        '  render: function() {',
+        '    return <div>Hello {this.props.name}</div>;',
+        '  }',
+        '});'
+      ].join('\n'),
+      parserOptions: parserOptions
+    }, {
+      code: [
+        'var Hello = React.createClass({',
+        '  propTypes: {',
+        '    name: React.PropTypes.string.isRequired',
+        '  },',
+        '  render: function() {',
+        '    var props = this.props;',
+        '    return <div>Hello {props.name}</div>;',
+        '  }',
+        '});'
+      ].join('\n'),
+      parserOptions: parserOptions
     }
   ],
 
@@ -1621,6 +1635,7 @@ ruleTester.run('prop-types', rule, {
         message: '\'name\' is missing in props validation'
       }]
     }, {
+      // No reassign into props variable
       code: [
         'class Hello extends React.Component {',
         '  render() {',
@@ -1631,6 +1646,7 @@ ruleTester.run('prop-types', rule, {
       ].join('\n'),
       parser: 'babel-eslint',
       errors: [
+        {message: '\'firstname\' is missing in props validation'},
         {message: '\'lastname\' is missing in props validation'}
       ]
     }, {
@@ -2054,6 +2070,51 @@ ruleTester.run('prop-types', rule, {
       errors: [{
         message: '\'lastname\' is missing in props validation'
       }]
+    }, {
+      code: [
+        'var Hello = React.createClass({',
+        '  propTypes: {',
+        '    name: React.PropTypes.string.isRequired',
+        '  },',
+        '  render: function() {',
+        '    return <div>Hello {this.props.lastname}</div>;',
+        '  }',
+        '});'
+      ].join('\n'),
+      parserOptions: parserOptions,
+      errors: [{
+        message: '\'lastname\' is missing in props validation'
+      }]
+    }, {
+      code: [
+        'var Hello = React.createClass({',
+        '  propTypes: {',
+        '    name: React.PropTypes.string.isRequired',
+        '  },',
+        '  render: function() {',
+        '    var props = this.props;',
+        '    return <div>Hello {props.lastname}</div>;',
+        '  }',
+        '});'
+      ].join('\n'),
+      parserOptions: parserOptions,
+      errors: [{
+        message: '\'lastname\' is missing in props validation'
+      }]
+    }, {
+      // Reassigned props are ignored
+      code: [
+        'export class Hello extends Component {',
+        '  render() {',
+        '    const props = this.props;',
+        '    return <div>Hello {props.name.firstname} {props[\'name\'].lastname}</div>',
+        '  }',
+        '}'
+      ].join('\n'),
+      parser: 'babel-eslint',
+      errors: [
+        {message: '\'name\' is missing in props validation'}
+      ]
     }
   ]
 });
